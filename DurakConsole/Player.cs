@@ -33,20 +33,20 @@ namespace DurakConsole
             return card;
         }
 
-        public Cards ComputerDefending(Cards att)
+        public Cards ComputerDefending(Cards att)// Computer choses defending card
         {
             Cards def = null;
 
             for (int i = 0; i < this.playerCards.Count; i++)
             {
-                if (this.playerCards[i].GetSuit() == att.GetSuit() && this.playerCards[i].GetValue() > att.GetValue())
+                if (this.playerCards[i].GetSuit() == att.GetSuit() && this.playerCards[i].GetValue() > att.GetValue())// to see if computer have higher card in same suit
                 {
                     if (def == null || def.GetValue() > this.playerCards[i].GetValue()) def = this.playerCards[i];
                 }
             }
             if (def == null)
             {
-                for (int i = 0; i < this.playerCards.Count; i++)
+                for (int i = 0; i < this.playerCards.Count; i++)// if computer didnt have same suit, choses lowest kozir to beat the card
                 {
                     if (this.playerCards[i].GetSuit() == Program.kozir.GetSuit() && att.GetSuit() != Program.kozir.GetSuit())
                     {
@@ -56,9 +56,7 @@ namespace DurakConsole
             }
             if (def != null)this.playerCards.Remove(def);
             
-            return def;
-
+            return def;// return null if didnt have cards to beat the attacking card
         }
-
     }
 }

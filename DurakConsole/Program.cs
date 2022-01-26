@@ -21,9 +21,9 @@ namespace DurakConsole
             two.SetName("Computer");
 
             CreatingMixingCards();
-            DealingCards(one,two, 6, 6);   
-            
-            int kozirPlace = deck.Count-1;  // sets kozir for the game
+            DealingCards(one, two, 6, 6);
+
+            int kozirPlace = deck.Count - 1;  // sets kozir for the game
             kozir = deck[kozirPlace];
             Console.WriteLine($"Kozir is {kozir.DisplayCard()}");
             int whoAttacks = WhoStarts(one, two);
@@ -33,16 +33,23 @@ namespace DurakConsole
             {
                 Console.Clear();
                 Console.WriteLine($"Kozir is {kozir.DisplayCard()}");
-                if (whoAttacks == 0)
+                while (whoAttacks == 0)
                 {
                     Console.WriteLine($"{one.GetName} is attaking , Please chose card to start.");
                     DisplayPlayerCards(one);
-                    Console.ReadKey();
+                    int chosenCard = IfIntAndValidChoise(Console.ReadLine(),two);
+                    cardsTable[]
+                    Cards defCard = two.ComputerDefending(one.GetCard(chosenCard));
+                    if (defCard != null)
+                    {
+                        Console.WriteLine($"You attacked with {one.}")
+                    }
+
+                    Console.WriteLine($"")
                 }
 
 
             }
-            
 
         }
 
@@ -89,17 +96,17 @@ namespace DurakConsole
                 $"{One.GetName} you cards are :");
             for (int i = 0; i < One.SeePlayerHand().Count; i++)
             {
-                Console.WriteLine(One.SeePlayerHand()[i].DisplayCard() + " <--" + i );
+                Console.WriteLine(One.SeePlayerHand()[i].DisplayCard() + " <--" + i);
             }
         }
 
-        static void DealingCards(Player one, Player two , int oneQty, int twoQty) // Deals carts to players as needet
+        static void DealingCards(Player one, Player two, int oneQty, int twoQty) // Deals carts to players as needet
         {
             for (int i = 0; i < oneQty; i++)
             {
                 one.SetCards(deck[0]);
                 deck.RemoveAt(0);
-                
+
             }
             for (int i = 0; i < twoQty; i++)
             {
@@ -124,7 +131,7 @@ namespace DurakConsole
                 }
             }
             Random random = new Random();
-            
+
             while (true)
             {
                 int rand = random.Next(creatingMixing.Length);
@@ -140,6 +147,24 @@ namespace DurakConsole
             return;
         }
 
+        public static int IfIntAndValidChoise(string imput, Player player)
+        {
+            int imputInt;
+            bool ifInt = false;
+            while (true)
+            {
+                ifInt = int.TryParse(imput, out imputInt);
+                if (ifInt) break;
+                Console.Write("You didnt enter a number, please try again :");
+                imput = Console.ReadLine();
+            }
+            if (imputInt >= player.SeePlayerHand().Count() || imputInt > 0)
+            {
+                Console.Write("You entered a to high number or to low, please enter a correct one :");
+                IfIntAndValidChoise(Console.ReadLine(), player);
+            }
+            return imputInt;
+        } 
         
 
     }
