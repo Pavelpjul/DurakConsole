@@ -9,7 +9,7 @@ namespace DurakConsole
     internal class Program
     {
         static List<Cards> deck = new List<Cards>();
-        static Cards[,] cardsTable = new Cards[6, 6];
+        static Cards[,] cardsTable = new Cards[2, 6];
         public static Cards kozir;
 
         static void Main()
@@ -31,26 +31,111 @@ namespace DurakConsole
             Console.ReadKey();
             while (true)
             {
-                Console.Clear();
+                int loopsCount = 0;                
                 Console.WriteLine($"Kozir is {kozir.DisplayCard()}");
-                while (whoAttacks == 0)
+                while (whoAttacks == 0)// player attacks
                 {
                     Console.WriteLine($"{one.GetName} is attaking , Please chose card to start.");
                     DisplayPlayerCards(one);
-                    int chosenCard = IfIntAndValidChoise(Console.ReadLine(),two);
-                    cardsTable[]
-                    Cards defCard = two.ComputerDefending(one.GetCard(chosenCard));
-                    if (defCard != null)
+                    int chosenCard = IfIntAndValidChoise(Console.ReadLine(),one);
+
+                    if (loopsCount > 0) verifyTableCardsAtt(one, chosenCard);
+                    if (chosenCard == 100)// if user wants to stop attacking after first card
                     {
-                        Console.WriteLine($"You attacked with {one.}")
+                        whoAttacks = 1;
+                        tableCardsPickUp(two, loopsCount);
+                        addCards(one);
+                        loopsCount = 0;
+                        break;
                     }
 
-                    Console.WriteLine($"")
+                    cardsTable[0,loopsCount] = one.GetCard(chosenCard);
+                    cardsTable[1,loopsCount] = two.ComputerDefending(cardsTable[0,loopsCount]);
+
+                    if (cardsTable[1, loopsCount] != null)
+                    {
+                        Console.Write($"You attacked with {cardsTable[0, loopsCount].DisplayCard()} and {two.GetName} defendet with {cardsTable[1, loopsCount].DisplayCard()}\n" +
+                            $"{one.GetName} do you wish to continue the attack ? 'y' for yes :");
+                        string response = Console.ReadLine();
+                        if (response.Equals("y"))// continues attack
+                        {
+                            loopsCount++;
+                            break;
+                        } else // stops atack
+                        {
+                            addCards(two);
+                            addCards(one);
+                            emptyTableCards(loopsCount);
+                            loopsCount = 0;
+                            whoAttacks = 1;
+                            break;
+                        }
+                    } else if (cardsTable[1,loopsCount] == null)// didnt had card to deffend
+                    {
+                        tableCardsPickUp(two, loopsCount);
+                        addCards(one);
+                        loopsCount = 0;
+                        break;
+                    }
+
+                    
                 }
 
 
             }
 
+        }
+
+        static int verifyTableCardsAtt(Player player, int chosenCard)
+        {
+            bool sameValue = false;
+            foreach ( Cards card in cardsTable)
+            {
+                if (card.GetValue() == player.SeePlayerHand()[chosenCard].GetValue()) { sameValue = true; }
+            }
+            if (!sameValue)
+            {
+                Console.Write("There no card like that on the table, please chose the right card or type 'stop' to finish attack:");
+                string imput = Console.ReadLine();
+                if (imput.Equals("stop")) return 100;
+                chosenCard = IfIntAndValidChoise(imput, player);
+                verifyTableCardsAtt(player, chosenCard);
+            }
+            return chosenCard;
+        }
+
+        static void tableCardsPickUp(Player player, int loopsCount)// Gives all the cards on the table to loser
+        {
+            Console.WriteLine($"{player.GetName} didnt have the cards to defend ! Take card/s if needet and attack again !");
+            for (int i = 0; i <= loopsCount; i++)
+            {
+                if(cardsTable[0, i] != null) player.SetCards(cardsTable[0, i]);
+                if(cardsTable[1, i] != null) player.SetCards(cardsTable[1, i]);
+                cardsTable[0, i] = null;
+                cardsTable[1, i] = null;
+            }
+        }
+
+        static void emptyTableCards(int loopsCount)
+        {
+            for (int i = 0; i <= loopsCount; i++)
+            {                
+                cardsTable[0, i] = null;
+                cardsTable[1, i] = null;
+            }
+        }
+
+        static void addCards(Player player)// verify if winer have 6 cards , if less, adds from the deck
+        {
+            if (player.SeePlayerHand().Count() < 6)
+            {
+                int count = 6 - player.SeePlayerHand().Count();
+                for (int i = 0; i < count; i++)
+                {
+                    player.SetCards(deck[0]);
+                    deck.RemoveAt(0);
+                }
+            }
         }
 
         static int WhoStarts(Player one, Player two) // verifys cards on hand and tell who have the smallest kozir to start
@@ -158,10 +243,10 @@ namespace DurakConsole
                 Console.Write("You didnt enter a number, please try again :");
                 imput = Console.ReadLine();
             }
-            if (imputInt >= player.SeePlayerHand().Count() || imputInt > 0)
+            if (imputInt >= player.SeePlayerHand().Count() || imputInt < 0)
             {
                 Console.Write("You entered a to high number or to low, please enter a correct one :");
-                IfIntAndValidChoise(Console.ReadLine(), player);
+                imputInt = IfIntAndValidChoise(Console.ReadLine(), player);
             }
             return imputInt;
         } 

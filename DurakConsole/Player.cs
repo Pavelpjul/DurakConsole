@@ -56,7 +56,7 @@ namespace DurakConsole
             }
             if (def != null)this.playerCards.Remove(def);
             
-            return def;// return null if didnt have cards to beat the attacking card
+            return def;// returns null if didnt have cards to beat the attacking card
         }
     }
 }
