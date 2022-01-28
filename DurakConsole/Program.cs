@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DurakConsole
 {
@@ -29,28 +27,56 @@ namespace DurakConsole
             int whoAttacks = WhoStarts(one, two);
             Console.WriteLine($"Press any key to start playing");
             Console.ReadKey();
+            int loopsCount = 0;
             while (true)
             {
-                int loopsCount = 0;                
-                Console.WriteLine($"Kozir is {kozir.DisplayCard()}");
+                Console.WriteLine($"********************************************\n" +
+                    $"Kozir is {kozir.DisplayCard()} and there {deck.Count} cards in the deck\n" +
+                    $"********************************************");
+
+                if (deck.Count == 0)
+                {
+                    if (one.SeePlayerHand().Count == 0 && two.SeePlayerHand().Count == 0)
+                    {
+                        Console.WriteLine("Its a TIE , press any key to exit");
+                        Console.ReadLine();
+                        System.Environment.Exit(1);
+                    }
+                    else if (one.SeePlayerHand().Count == 0)
+                    {
+                        Console.WriteLine($"{one.GetName} have WON !!!! \nPress any key to exit");
+                        Console.ReadLine();
+                        System.Environment.Exit(1);
+                    }
+                    else if (two.SeePlayerHand().Count == 0)
+                    {
+                        Console.WriteLine($"{two.GetName} have WON !!!! \nPress any key to exit");
+                        Console.ReadLine();
+                        System.Environment.Exit(1);
+                    }
+                }
+
+
                 while (whoAttacks == 0)// player attacks
                 {
-                    Console.WriteLine($"{one.GetName} is attaking , Please chose card to start.");
+                    if (loopsCount > 0) DisplayCardsTable(loopsCount);
+                    Console.WriteLine($"{one.GetName} is attaking , Please chose card.");
                     DisplayPlayerCards(one);
-                    int chosenCard = IfIntAndValidChoise(Console.ReadLine(),one);
+                    int chosenCard = IfIntAndValidChoise(Console.ReadLine(), one);
 
-                    if (loopsCount > 0) verifyTableCardsAtt(one, chosenCard);
+                    if (loopsCount > 0) chosenCard = verifyTableCardsAtt(one, chosenCard);
                     if (chosenCard == 100)// if user wants to stop attacking after first card
                     {
                         whoAttacks = 1;
-                        tableCardsPickUp(two, loopsCount);
                         addCards(one);
+                        addCards(two);
+                        emptyTableCards(loopsCount);
                         loopsCount = 0;
                         break;
                     }
 
-                    cardsTable[0,loopsCount] = one.GetCard(chosenCard);
-                    cardsTable[1,loopsCount] = two.ComputerDefending(cardsTable[0,loopsCount]);
+                    cardsTable[0, loopsCount] = one.GetCard(chosenCard);
+                    cardsTable[1, loopsCount] = two.ComputerDef(cardsTable[0, loopsCount]);
 
                     if (cardsTable[1, loopsCount] != null)
                     {
@@ -61,7 +87,8 @@ namespace DurakConsole
                         {
                             loopsCount++;
                             break;
-                        } else // stops atack
+                        }
+                        else // stops atack
                         {
                             addCards(two);
                             addCards(one);
@@ -70,38 +97,133 @@ namespace DurakConsole
                             whoAttacks = 1;
                             break;
                         }
-                    } else if (cardsTable[1,loopsCount] == null)// didnt had card to deffend
+                    }
+                    else if (cardsTable[1, loopsCount] == null)// didnt had card to deffend
                     {
+                        Console.WriteLine($"{two.GetName} didnt had card to defent, {one.GetName} attacks again !");
                         tableCardsPickUp(two, loopsCount);
                         addCards(one);
                         loopsCount = 0;
                         break;
                     }
-
-                    
                 }
 
+                while (whoAttacks == 1) // Computer attacks
+                {
+                    cardsTable[0, loopsCount] = two.ComputerAtt(loopsCount);
 
+                    if (cardsTable[0, loopsCount] == null && two.SeePlayerHand().Count == 0) // if returns null and 0 , means no cards left in deck and hands, computer won
+                    {
+                        Console.WriteLine($"{two.GetName} have no cards left , HE WON !!!! \n" +
+                            $"Press any key to exit");
+                        Console.ReadLine();
+                        System.Environment.Exit(1);
+                    }
+                    else if (cardsTable[0, loopsCount] == null && two.SeePlayerHand().Count != 0) // if returns null and have cards on hand, then no cards to attack
+                    {
+                        Console.WriteLine($"{two.GetName} didnt have the right card to continue attacking , your turn now");
+                        emptyTableCards(loopsCount);
+                        addCards(two);
+                        addCards(one);
+                        loopsCount = 0;
+                        whoAttacks = 0;
+                        break;
+                    }
+
+                    Console.WriteLine($"{two.GetName} is attacking with {cardsTable[0, loopsCount].DisplayCard()} , {one.GetName} please chose a card to defend .");
+                    DisplayPlayerCards(one);
+                    int defPlace = IfIntAndValidChoise(Console.ReadLine(), one);
+                    bool canBeat = IfCanBeat(cardsTable[0, loopsCount], one.SeePlayerHand()[defPlace]);
+                    bool take = false;
+                    while (!canBeat)
+                    {
+                        Console.WriteLine($"You didnt chose the card that can beat the attacking card {cardsTable[0, loopsCount].DisplayCard()} , please chose again or type 'take' to pick up the card");
+                        DisplayPlayerCards(one);
+                        string imput = Console.ReadLine();
+                        if (imput.Equals("take"))
+                        {
+                            take = true;
+                            break;
+                        }
+
+                        defPlace = IfIntAndValidChoise(imput, one);
+                        canBeat = IfCanBeat(cardsTable[0, loopsCount], one.SeePlayerHand()[defPlace]);
+                        if (canBeat) break;
+                    }
+
+                    if (canBeat)
+                    {
+                        Console.WriteLine($"{one.GetName} your card can beat the computer card, lets continue !");
+                        cardsTable[1, loopsCount] = one.GetCard(defPlace);
+                        loopsCount++;
+                        break;
+                    }
+                    if (take) // if player takes the cards
+                    {
+                        tableCardsPickUp(one, loopsCount);
+                        addCards(two);
+                        loopsCount = 0;
+                        break;
+                    }
+                }
             }
+        }
+
+
+        //---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        static void DisplayCardsTable(int loops)
+        {
+            Console.Write("The cards on the table are :");
+            for (int i = 0; i < loops; i++)
+            {
+                Console.Write( cardsTable[0, i].DisplayCard() + " " + cardsTable[1, i].DisplayCard() + " ");
+            }
+            Console.WriteLine("\n------------------------------------------------------------");
+        }
+
+        static bool IfCanBeat(Cards att, Cards def)
+        {
+            if (att.GetSuit() == def.GetSuit() && att.GetValue() < def.GetValue() ||
+                def.GetSuit() == kozir.GetSuit() && att.GetSuit() != kozir.GetSuit())
+            {
+                return true;
+            }
+            else return false;
 
         }
 
-        static int verifyTableCardsAtt(Player player, int chosenCard)
-        {
-            bool sameValue = false;
-            foreach ( Cards card in cardsTable)
+        public static int verifyTableCardsAtt(Player player, int chosenCard)
+        {            
+            while (true)
             {
-                if (card.GetValue() == player.SeePlayerHand()[chosenCard].GetValue()) { sameValue = true; }
-            }
-            if (!sameValue)
-            {
+                foreach (Cards card in cardsTable)
+                {
+                    if (card != null)
+                    {
+                        if (card.GetValue() == player.SeePlayerHand()[chosenCard].GetValue()) return chosenCard;
+                    }
+                }
                 Console.Write("There no card like that on the table, please chose the right card or type 'stop' to finish attack:");
                 string imput = Console.ReadLine();
-                if (imput.Equals("stop")) return 100;
-                chosenCard = IfIntAndValidChoise(imput, player);
-                verifyTableCardsAtt(player, chosenCard);
+                if (imput.Equals("stop"))
+                {
+                    return 100;
+                }
+                chosenCard = IfIntAndValidChoise(imput, player);                
             }
-            return chosenCard;
+        }
+
+        public static bool verifyTableCardsComputer(Player player, int chosenCard)
+        {            
+            foreach (Cards card in cardsTable)
+            {
+                if(card != null)
+                {
+                    if (card.GetValue() == player.SeePlayerHand()[chosenCard].GetValue()) return true; 
+                }                
+            }
+            return false;
         }
 
         static void tableCardsPickUp(Player player, int loopsCount)// Gives all the cards on the table to loser
@@ -109,8 +231,8 @@ namespace DurakConsole
             Console.WriteLine($"{player.GetName} didnt have the cards to defend ! Take card/s if needet and attack again !");
             for (int i = 0; i <= loopsCount; i++)
             {
-                if(cardsTable[0, i] != null) player.SetCards(cardsTable[0, i]);
-                if(cardsTable[1, i] != null) player.SetCards(cardsTable[1, i]);
+                if (cardsTable[0, i] != null) player.SetCards(cardsTable[0, i]);
+                if (cardsTable[1, i] != null) player.SetCards(cardsTable[1, i]);
                 cardsTable[0, i] = null;
                 cardsTable[1, i] = null;
             }
@@ -119,7 +241,7 @@ namespace DurakConsole
         static void emptyTableCards(int loopsCount)
         {
             for (int i = 0; i <= loopsCount; i++)
-            {                
+            {
                 cardsTable[0, i] = null;
                 cardsTable[1, i] = null;
             }
@@ -127,10 +249,18 @@ namespace DurakConsole
 
         static void addCards(Player player)// verify if winer have 6 cards , if less, adds from the deck
         {
-            if (player.SeePlayerHand().Count() < 6)
+            int count = 6 - player.SeePlayerHand().Count();
+            if (player.SeePlayerHand().Count() < 6 && deck.Count() >= count)
             {
-                int count = 6 - player.SeePlayerHand().Count();
                 for (int i = 0; i < count; i++)
+                {
+                    player.SetCards(deck[0]);
+                    deck.RemoveAt(0);
+                }
+            }
+            else if (player.SeePlayerHand().Count() < 6 && deck.Count() < count)
+            {
+                for (int i = 0; i < deck.Count(); i++)
                 {
                     player.SetCards(deck[0]);
                     deck.RemoveAt(0);
@@ -224,7 +354,8 @@ namespace DurakConsole
                 {
                     deck.Add(creatingMixing[rand]);
                     creatingMixing[rand] = null;
-                } else if (deck.Count == 36)
+                }
+                else if (deck.Count == 36)
                 {
                     break;
                 }
@@ -249,8 +380,8 @@ namespace DurakConsole
                 imputInt = IfIntAndValidChoise(Console.ReadLine(), player);
             }
             return imputInt;
-        } 
-        
+        }
+
 
     }
 }

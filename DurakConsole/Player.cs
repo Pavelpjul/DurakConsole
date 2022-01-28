@@ -33,7 +33,7 @@ namespace DurakConsole
             return card;
         }
 
-        public Cards ComputerDefending(Cards att)// Computer choses defending card
+        public Cards ComputerDef(Cards att)// Computer choses defending card
         {
             Cards def = null;
 
@@ -57,6 +57,56 @@ namespace DurakConsole
             if (def != null)this.playerCards.Remove(def);
             
             return def;// returns null if didnt have cards to beat the attacking card
+        }
+
+        public Cards ComputerAtt(int loopsCount) // Computer attacks, return smallest card on hands , if no returns null
+        {
+            Cards att = null;
+            if (loopsCount == 0)
+            {
+                for (int i = 0; i < this.playerCards.Count; ++i)
+                {
+                    if (att == null )
+                    {
+                        att = this.playerCards[i];
+                    }
+                    if (att.GetValue() < this.playerCards[i].GetValue() && this.playerCards[i].GetSuit() != Program.kozir.GetSuit())
+                    {
+                        att = this.playerCards[i];
+                    }
+                    else if (att.GetSuit() == Program.kozir.GetSuit() && this.playerCards[i].GetSuit() == Program.kozir.GetSuit() && att.GetValue() < this.playerCards[i].GetValue())
+                    {
+                        att = this.playerCards[i];
+                    }
+                }
+            }
+            if (loopsCount > 0)
+            {
+                for (int i = 0; i < this.playerCards.Count; ++i)
+                {
+                    bool acceptableCard = Program.verifyTableCardsComputer(this, i);
+                    if (att == null && acceptableCard )
+                    {
+                        att = this.playerCards[i];
+                    }
+                    if (att != null && acceptableCard)
+                    {
+                        if (att.GetValue() < this.playerCards[i].GetValue() && this.playerCards[i].GetSuit() != Program.kozir.GetSuit() && acceptableCard) att = this.playerCards[i];
+                        else if (acceptableCard && att.GetSuit() == Program.kozir.GetSuit() && 
+                            this.playerCards[i].GetSuit() == Program.kozir.GetSuit() && att.GetValue() < this.playerCards[i].GetValue())
+                        {
+                            att = this.playerCards[i];
+                        }
+                    }                  
+                }
+            }
+
+            if (att != null)
+            {
+                playerCards.Remove(att);
+                return att;
+            }
+            return null;
         }
     }
 }
