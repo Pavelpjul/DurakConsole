@@ -12,7 +12,7 @@ namespace DurakConsole
 
         static void Main()
         {
-            Console.Write("Welcome to the game Durak !!!\nPlease enter yout name :");
+            Console.Write("Welcome to the game Durak !!!\nPlease enter your name :");
             Player one = new Player();
             one.SetName(Console.ReadLine());
             Player two = new Player();
@@ -81,20 +81,20 @@ namespace DurakConsole
                     if (cardsTable[1, loopsCount] != null)
                     {
                         Console.Write($"You attacked with {cardsTable[0, loopsCount].DisplayCard()} and {two.GetName} defendet with {cardsTable[1, loopsCount].DisplayCard()}\n" +
-                            $"{one.GetName} do you wish to continue the attack ? 'y' for yes :");
+                            $"{one.GetName} do you wish to stop the attack ? 'y' for yes :");
                         string response = Console.ReadLine();
-                        if (response.Equals("y"))// continues attack
-                        {
-                            loopsCount++;
-                            break;
-                        }
-                        else // stops atack
+                        if (response.Equals("y"))// stops atack 
                         {
                             addCards(two);
                             addCards(one);
                             emptyTableCards(loopsCount);
                             loopsCount = 0;
                             whoAttacks = 1;
+                            break;                            
+                        }
+                        else // continues attack
+                        {
+                            loopsCount++;
                             break;
                         }
                     }
@@ -130,27 +130,31 @@ namespace DurakConsole
                         break;
                     }
 
-                    Console.WriteLine($"{two.GetName} is attacking with {cardsTable[0, loopsCount].DisplayCard()} , {one.GetName} please chose a card to defend .");
+                    Console.WriteLine($"{two.GetName} is attacking with {cardsTable[0, loopsCount].DisplayCard()} , {one.GetName} please chose a card to defend or type 'take' to pick up the card.");
                     DisplayPlayerCards(one);
-                    int defPlace = IfIntAndValidChoise(Console.ReadLine(), one);
+                    string input = Console.ReadLine();
+                    int defPlace = IfIntAndValidChoise(input, one);
                     bool canBeat = IfCanBeat(cardsTable[0, loopsCount], one.SeePlayerHand()[defPlace]);
                     bool take = false;
-                    while (!canBeat)
+                    if (input.Equals("take")) // if user enter 'take' , he picks up the cards and computer starts new attack
+                    {
+                        take = true;                        
+                    }
+                    while (!canBeat && !take)
                     {
                         Console.WriteLine($"You didnt chose the card that can beat the attacking card {cardsTable[0, loopsCount].DisplayCard()} , please chose again or type 'take' to pick up the card");
                         DisplayPlayerCards(one);
-                        string imput = Console.ReadLine();
-                        if (imput.Equals("take"))
+                        
+                        if (input.Equals("take"))
                         {
                             take = true;
                             break;
                         }
 
-                        defPlace = IfIntAndValidChoise(imput, one);
+                        defPlace = IfIntAndValidChoise(input, one);
                         canBeat = IfCanBeat(cardsTable[0, loopsCount], one.SeePlayerHand()[defPlace]);
                         if (canBeat) break;
                     }
-
                     if (canBeat)
                     {
                         Console.WriteLine($"{one.GetName} your card can beat the computer card, lets continue !");
@@ -168,11 +172,9 @@ namespace DurakConsole
                 }
             }
         }
-
-
         //---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        static void DisplayCardsTable(int loops)
+        static void DisplayCardsTable(int loops) // displays the cards on the table soo the player could chose same value
         {
             Console.Write("The cards on the table are :");
             for (int i = 0; i < loops; i++)
@@ -182,7 +184,7 @@ namespace DurakConsole
             Console.WriteLine("\n------------------------------------------------------------");
         }
 
-        static bool IfCanBeat(Cards att, Cards def)
+        static bool IfCanBeat(Cards att, Cards def) // verifies that the defending card can beat attacking card
         {
             if (att.GetSuit() == def.GetSuit() && att.GetValue() < def.GetValue() ||
                 def.GetSuit() == kozir.GetSuit() && att.GetSuit() != kozir.GetSuit())
@@ -193,7 +195,7 @@ namespace DurakConsole
 
         }
 
-        public static int verifyTableCardsAtt(Player player, int chosenCard)
+        public static int verifyTableCardsAtt(Player player, int chosenCard) // to make sure player choses the same value cards that are on the table
         {            
             while (true)
             {
@@ -214,7 +216,7 @@ namespace DurakConsole
             }
         }
 
-        public static bool verifyTableCardsComputer(Player player, int chosenCard)
+        public static bool verifyTableCardsComputer(Player player, int chosenCard) // to make sure computer choses the same value cards that are on the table
         {            
             foreach (Cards card in cardsTable)
             {
@@ -238,7 +240,7 @@ namespace DurakConsole
             }
         }
 
-        static void emptyTableCards(int loopsCount)
+        static void emptyTableCards(int loopsCount) // sets cards  on the table to null to start new game
         {
             for (int i = 0; i <= loopsCount; i++)
             {
@@ -363,8 +365,8 @@ namespace DurakConsole
             return;
         }
 
-        public static int IfIntAndValidChoise(string imput, Player player)
-        {
+        public static int IfIntAndValidChoise(string imput, Player player) 
+        { // verifies if int is entered and it is in correct range
             int imputInt;
             bool ifInt = false;
             while (true)
@@ -381,7 +383,5 @@ namespace DurakConsole
             }
             return imputInt;
         }
-
-
     }
 }

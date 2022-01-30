@@ -41,7 +41,7 @@ namespace DurakConsole
             {
                 if (this.playerCards[i].GetSuit() == att.GetSuit() && this.playerCards[i].GetValue() > att.GetValue())// to see if computer have higher card in same suit
                 {
-                    if (def == null || def.GetValue() > this.playerCards[i].GetValue()) def = this.playerCards[i];
+                    if (def == null || def.GetValue() > this.playerCards[i].GetValue()) def = this.playerCards[i];                    
                 }
             }
             if (def == null)
@@ -70,7 +70,7 @@ namespace DurakConsole
                     {
                         att = this.playerCards[i];
                     }
-                    if (att.GetValue() < this.playerCards[i].GetValue() && this.playerCards[i].GetSuit() != Program.kozir.GetSuit())
+                    if (att.GetValue() > this.playerCards[i].GetValue() && this.playerCards[i].GetSuit() != Program.kozir.GetSuit())
                     {
                         att = this.playerCards[i];
                     }
